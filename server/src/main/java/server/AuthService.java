@@ -14,4 +14,5 @@ public interface AuthService {
      * @return false если логин или никнейм заняты, и регистрация не получилась
      * */
     boolean registration(String login, String password, String nickname);
+    boolean changeNickname(String login, String password, String nickname);
 }
