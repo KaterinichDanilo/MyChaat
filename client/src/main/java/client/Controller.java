@@ -45,7 +45,7 @@ public class Controller implements Initializable {
     public ListView<String> clientList;
 
     private Socket socket;
-    private static final int PORT = 8189;
+    private static final int PORT = 30000;
     private static final String ADDRESS = "localhost";
 
     private DataInputStream in;

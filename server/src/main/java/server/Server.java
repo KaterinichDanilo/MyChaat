@@ -9,18 +9,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Server {
     private ServerSocket server;
     private Socket socket;
-    private final int PORT = 8189;
+    private final int PORT = 30000;
 
     private List<ClientHandler> clients;
     private AuthService authService;
 
     public Server() {
         clients = new CopyOnWriteArrayList<>();
-        authService = new SimpleAuthService();
+        authService = new UsersData();
 
         try {
             server = new ServerSocket(PORT);
+            UsersData.connect();
             System.out.println("Server started");
+            System.out.println("DataBase connected");
+
 
             while (true) {
                 socket = server.accept();
@@ -29,6 +32,8 @@ public class Server {
             }
 
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
@@ -42,6 +47,10 @@ public class Server {
                 e.printStackTrace();
             }
         }
+    }
+
+    public List<ClientHandler> getClients() {
+        return clients;
     }
 
     public void broadcastMsg(ClientHandler sender, String msg) {

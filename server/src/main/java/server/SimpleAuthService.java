@@ -21,9 +21,6 @@ public class SimpleAuthService implements AuthService {
 
     public SimpleAuthService() {
         users = new ArrayList<>();
-        users.add(new UserData("qwe", "qwe", "qwe"));
-        users.add(new UserData("asd", "asd", "asd"));
-        users.add(new UserData("zxc", "zxc", "zxc"));
 
         for (int i = 0; i < 9; i++) {
             users.add(new UserData("user" + i, "pass" + i, "nick" + i));
@@ -33,6 +30,7 @@ public class SimpleAuthService implements AuthService {
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
+        System.out.println("SimpleAuthService");
         for (UserData u : users) {
             if (u.login.equals(login) && u.password.equals(password)) {
                 return u.nickname;
@@ -51,5 +49,10 @@ public class SimpleAuthService implements AuthService {
         }
         users.add(new UserData(login, password, nickname));
         return true;
+    }
+
+    @Override
+    public boolean changeNickname(String login, String password, String nickname) {
+        return false;
     }
 }

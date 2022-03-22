@@ -17,6 +17,7 @@ public class ClientHandler {
     private boolean authenticated;
     private String nickname;
     private String login;
+    private String password;
 
     public ClientHandler(Server server, Socket socket) {
         try {
@@ -47,6 +48,7 @@ public class ClientHandler {
                                 String newNick = server.getAuthService()
                                         .getNicknameByLoginAndPassword(token[1], token[2]);
                                 login = token[1];
+                                password = token[2];
                                 if (newNick != null) {
                                     if (!server.isLoginAuthenticated(login)) {
                                         nickname = newNick;
@@ -85,6 +87,24 @@ public class ClientHandler {
                             if (str.equals(Command.END)) {
                                 sendMsg(Command.END);
                                 break;
+                            }
+                            if (str.startsWith(Command.CHANGE_NICKNAME)) {
+                                String[] token = str.split(" ", 2);
+                                if (token.length < 2) {
+                                    continue;
+                                }
+                                if (server.getAuthService().changeNickname(login, token[1], password)) {
+                                    sendMsg("You changed nickname to " + token[1]);
+                                    nickname = token[1];
+                                    StringBuilder message = new StringBuilder("/clientlist ");
+                                    for (int i = 0; i < server.getClients().size(); i++) {
+                                        message.append(server.getClients().get(i).nickname + " ");
+                                    }
+                                    sendMsg(message.toString());
+                                } else {
+                                    sendMsg("The nickname " + token[1] + " is taken. Try another one");
+                                }
+
                             }
                             if (str.startsWith("/w ")) {
                                 String[] token = str.split(" ", 3);
