@@ -1,5 +1,6 @@
 package client;
 
+import constants.Command;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -32,10 +33,10 @@ public class RegController {
     }
 
     public void result(String command) {
-        if (command.equals("/reg_ok")) {
-            textArea.appendText("Регистрация прошла успешно\n");
+        if (command.equals(Command.REG_OK)) {
+            textArea.appendText("Registration is successful\n");
         } else {
-            textArea.appendText("Логин или никнейм заняты\n");
+            textArea.appendText("Login or password are taken\n");
         }
     }
 

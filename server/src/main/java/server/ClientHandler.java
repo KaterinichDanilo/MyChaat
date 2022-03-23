@@ -40,7 +40,7 @@ public class ClientHandler {
                                 break;
                             }
 
-                            if (str.startsWith("/auth")) {
+                            if (str.startsWith(Command.AUTH)) {
                                 String[] token = str.split(" ", 3);
                                 if (token.length < 3) {
                                     continue;
@@ -52,7 +52,7 @@ public class ClientHandler {
                                 if (newNick != null) {
                                     if (!server.isLoginAuthenticated(login)) {
                                         nickname = newNick;
-                                        sendMsg("/auth_ok " + nickname);
+                                        sendMsg(Command.AUTH_OK + " " + nickname);
                                         authenticated = true;
                                         server.subscribe(this);
                                         socket.setSoTimeout(0);
@@ -65,15 +65,15 @@ public class ClientHandler {
                                 }
                             }
 
-                            if (str.startsWith("/reg")) {
+                            if (str.startsWith(Command.REG)) {
                                 String[] token = str.split(" ");
                                 if (token.length < 4) {
                                     continue;
                                 }
                                 if (server.getAuthService().registration(token[1], token[2], token[3])) {
-                                    sendMsg("/reg_ok");
+                                    sendMsg(Command.REG_OK);
                                 } else {
-                                    sendMsg("/reg_no");
+                                    sendMsg(Command.REG_NO);
                                 }
                             }
                         }
