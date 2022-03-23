@@ -6,6 +6,7 @@ public class UsersData implements AuthService {
     private static Statement statement;
     private static PreparedStatement preparedInsertStatement;
     private static PreparedStatement preparedUpdateStatement;
+    private static PreparedStatement preparedStatementGetNickname;
 
     public UsersData() {
         try {
@@ -36,18 +37,18 @@ public class UsersData implements AuthService {
     private static void prepareStatement() throws SQLException {
         preparedInsertStatement = connection.prepareStatement("INSERT INTO users (name, nickName, password) VALUES (?, ?, ?);");
         preparedUpdateStatement = connection.prepareStatement("UPDATE users SET nickName = ? WHERE name == ?;");
+        preparedStatementGetNickname = connection.prepareStatement("SELECT nickName FROM users WHERE name = ? AND password = ?;");
     }
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
         try {
-            ResultSet resultSet = statement.executeQuery("SELECT name, nickName, password FROM users;");
+            preparedStatementGetNickname.setString(1, login);
+            preparedStatementGetNickname.setString(2, password);
+            ResultSet resultSet = preparedStatementGetNickname.executeQuery();
 
-            while (resultSet.next()) {
-                if (resultSet.getString("name").equals(login) && resultSet.getString("password").equals(password)) {
-                    System.out.println(resultSet.getString("nickName"));
-                    return resultSet.getString("nickName");
-                }
+            if (resultSet.next()) {
+                return resultSet.getString(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -58,22 +59,15 @@ public class UsersData implements AuthService {
     @Override
     public boolean registration(String login, String password, String nickname) {
         try {
-            ResultSet resultSet = statement.executeQuery("SELECT name, nickName, password FROM users;");
-
-            while (resultSet.next()) {
-                if (resultSet.getString("name").equals(login) || resultSet.getString("nickName").equals(nickname)) {
-                    return false;
-                }
-            }
-
             preparedInsertStatement.setString(1, login);
             preparedInsertStatement.setString(2, nickname);
             preparedInsertStatement.setString(3, password);
             preparedInsertStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return true;
     }
 
     @Override
