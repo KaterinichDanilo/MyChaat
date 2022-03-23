@@ -22,6 +22,7 @@ import javafx.stage.WindowEvent;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
@@ -114,7 +115,7 @@ public class Controller implements Initializable {
                                 setAuthenticated(true);
                                 break;
                             }
-                            if(str.equals("/reg_ok") || str.equals("/reg_no")){
+                            if(str.equals(Command.REG_OK) || str.equals(Command.REG_NO)){
                                 regController.result(str);
                             }
                         } else {
@@ -178,7 +179,7 @@ public class Controller implements Initializable {
             connect();
         }
 
-        String msg = String.format("/auth %s %s", loginField.getText().trim(), passwordField.getText().trim());
+        String msg = String.format(Command.AUTH + " %s %s", loginField.getText().trim(), passwordField.getText().trim());
         passwordField.clear();
 
         try {
@@ -191,9 +192,9 @@ public class Controller implements Initializable {
     private void setTitle(String nickname) {
         String title;
         if (nickname.equals("")) {
-            title = "Chatty";
+            title = "MyChaat";
         } else {
-            title = String.format("Chatty [ %s ]", nickname);
+            title = String.format("%s", nickname);
         }
         Platform.runLater(() -> {
             stage.setTitle(title);
@@ -202,7 +203,7 @@ public class Controller implements Initializable {
 
     public void clientListMouseAction(MouseEvent mouseEvent) {
         String receiver = clientList.getSelectionModel().getSelectedItem();
-        textField.setText(String.format("/w %s ", receiver));
+        textField.setText(String.format(Command.PRIVATE_MESSAGE + " %s ", receiver));
     }
 
     private void createRegStage() {
@@ -212,7 +213,7 @@ public class Controller implements Initializable {
 
             regStage = new Stage();
 
-            regStage.setTitle("Chatty registration");
+            regStage.setTitle("MyChaat registration");
             regStage.setScene(new Scene(root, 600, 500));
 
             regController = fxmlLoader.getController();
@@ -235,7 +236,7 @@ public class Controller implements Initializable {
     }
 
     public void registration(String login, String password, String nickname) {
-        String msg = String.format("/reg %s %s %s", login, password, nickname);
+        String msg = String.format(Command.REG + " %s %s %s", login, password, nickname);
 
         if (socket == null || socket.isClosed()) {
             connect();
