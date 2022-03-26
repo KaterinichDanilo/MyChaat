@@ -20,13 +20,14 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -54,6 +55,7 @@ public class Controller implements Initializable {
 
     private boolean authenticated;
     private String nickname;
+    private String login;
     private Stage stage;
     private Stage regStage;
     private RegController regController;
@@ -111,6 +113,7 @@ public class Controller implements Initializable {
                                 break;
                             }
                             if (str.startsWith(Command.AUTH_OK)) {
+                                login = loginField.getText();
                                 nickname = str.split(" ")[1];
                                 setAuthenticated(true);
                                 break;
@@ -123,6 +126,15 @@ public class Controller implements Initializable {
                         }
                     }
                     //цикл работы
+                    File historyFile = new File("client/src/main/ChatHistoryFiles/history_" + login + ".txt");
+                    FileWriter fileWriter = new FileWriter(historyFile, true);
+                    List<String> lines = Files.readAllLines(Paths.get(historyFile.getAbsolutePath()));
+                    for (int i = 0; i < 100; i++) {
+                        if (i >= lines.size()) {
+                            break;
+                        }
+                        textArea.appendText(lines.get(i) + "\n");
+                    }
                     while (authenticated) {
                         String str = in.readUTF();
 
@@ -143,8 +155,10 @@ public class Controller implements Initializable {
 
                         } else {
                             textArea.appendText(str + "\n");
+                            fileWriter.append(str).append("\n");
                         }
                     }
+                    fileWriter.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
@@ -196,9 +210,7 @@ public class Controller implements Initializable {
         } else {
             title = String.format("%s", nickname);
         }
-        Platform.runLater(() -> {
-            stage.setTitle(title);
-        });
+        Platform.runLater(() -> stage.setTitle(title));
     }
 
     public void clientListMouseAction(MouseEvent mouseEvent) {
@@ -236,6 +248,15 @@ public class Controller implements Initializable {
     }
 
     public void registration(String login, String password, String nickname) {
+        File historyFile = new File("client/src/main/ChatHistoryFiles/history_" + login + ".txt");
+        try {
+            if (historyFile.createNewFile()) {
+                System.out.println("File " + historyFile.getName() + "was successfully created");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         String msg = String.format(Command.REG + " %s %s %s", login, password, nickname);
 
         if (socket == null || socket.isClosed()) {
