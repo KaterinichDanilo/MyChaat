@@ -5,14 +5,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket server;
     private Socket socket;
     private final int PORT = 30000;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     private List<ClientHandler> clients;
     private AuthService authService;
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
 
     public Server() {
         clients = new CopyOnWriteArrayList<>();
@@ -31,8 +38,6 @@ public class Server {
                 new ClientHandler(this, socket);
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
