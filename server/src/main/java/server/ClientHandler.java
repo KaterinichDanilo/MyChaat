@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClientHandler {
     private Server server;
@@ -20,6 +24,17 @@ public class ClientHandler {
     private String login;
     private String password;
     private ExecutorService executorService;
+
+    private static Logger logger = Logger.getLogger(Server.class.getName());
+    private static Handler fileHandler;
+
+    static {
+        try {
+            fileHandler = new FileHandler("log_ClientHandler_%g.log", 10 * 1024, 10, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public ClientHandler(Server server, Socket socket) {
         try {
@@ -125,14 +140,14 @@ public class ClientHandler {
                 } catch (SocketTimeoutException e) {
                     sendMsg(Command.END);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.log(Level.SEVERE, e.getMessage());
                 } finally {
                     server.unsubscribe(this);
-                    System.out.println("Client disconnected");
+                    logger.log(Level.CONFIG, "Client disconnected");
                     try {
                         socket.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.log(Level.SEVERE, e.getMessage());
                     }
                 }
 
@@ -147,7 +162,7 @@ public class ClientHandler {
         try {
             out.writeUTF(msg);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 

@@ -1,5 +1,10 @@
 package server;
+import java.io.IOException;
 import java.sql.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UsersData implements AuthService {
     private static Connection connection;
@@ -8,14 +13,25 @@ public class UsersData implements AuthService {
     private static PreparedStatement preparedUpdateStatement;
     private static PreparedStatement preparedStatementGetNickname;
 
+    private static Logger logger = Logger.getLogger(Server.class.getName());
+    private static Handler fileHandler;
+
+    static {
+        try {
+            fileHandler = new FileHandler("log_Database_%g.log", 10 * 1024, 10, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public UsersData() {
         try {
             connect();
             prepareStatement();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -30,7 +46,7 @@ public class UsersData implements AuthService {
             statement.close();
             connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -51,7 +67,7 @@ public class UsersData implements AuthService {
                 return resultSet.getString(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
         return null;
     }
@@ -65,7 +81,7 @@ public class UsersData implements AuthService {
             preparedInsertStatement.executeUpdate();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
             return false;
         }
     }
@@ -87,8 +103,8 @@ public class UsersData implements AuthService {
                 preparedUpdateStatement.executeUpdate();
                 return true;
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, e.getMessage());
         }
         return false;
     }
