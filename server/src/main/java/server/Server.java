@@ -1,5 +1,6 @@
 package server;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,12 +15,20 @@ public class Server {
     private Socket socket;
     private final int PORT = 30000;
     private ExecutorService executorService = Executors.newCachedThreadPool();
+    private static LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(Server.class.getName());
     private static Handler fileHandler;
 
     static {
         try {
-            fileHandler = new FileHandler("log_Server_%g.log", 10 * 1024, 10, true);
+            logManager.readConfiguration(new FileInputStream("logging.properties"));
+            fileHandler = new FileHandler("Logs/ServerLogs/log_Server_%g.log", 10 * 1024, 10, true);
+            fileHandler.setFormatter(new Formatter() {
+            @Override
+            public String format(LogRecord r) {
+                return String.format(">>>>> %s LVL: %s \n",r.getMessage(), r.getThreadID());
+            }
+        });
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,6 +44,7 @@ public class Server {
     public Server() {
         clients = new CopyOnWriteArrayList<>();
         authService = new UsersData();
+
         logger.addHandler(fileHandler);
 
         try {

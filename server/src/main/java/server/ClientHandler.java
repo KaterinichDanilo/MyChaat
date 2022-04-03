@@ -4,14 +4,12 @@ import constants.Command;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class ClientHandler {
     private Server server;
@@ -25,12 +23,20 @@ public class ClientHandler {
     private String password;
     private ExecutorService executorService;
 
+    private static LogManager logManager = LogManager.getLogManager();
     private static Logger logger = Logger.getLogger(Server.class.getName());
     private static Handler fileHandler;
 
     static {
         try {
-            fileHandler = new FileHandler("log_ClientHandler_%g.log", 10 * 1024, 10, true);
+            logManager.readConfiguration(new FileInputStream("logging.properties"));
+            fileHandler = new FileHandler("Logs/ClientHandlerLogs/log_ClientHandler_%g.log", 10 * 1024, 10, true);
+            fileHandler.setFormatter(new Formatter() {
+                @Override
+                public String format(LogRecord r) {
+                    return String.format(">>>>> %s LVL: %s \n",r.getMessage(), r.getThreadID());
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
