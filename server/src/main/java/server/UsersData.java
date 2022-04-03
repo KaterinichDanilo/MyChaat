@@ -1,5 +1,8 @@
 package server;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.util.logging.*;
 
 public class UsersData implements AuthService {
     private static Connection connection;
@@ -8,14 +11,33 @@ public class UsersData implements AuthService {
     private static PreparedStatement preparedUpdateStatement;
     private static PreparedStatement preparedStatementGetNickname;
 
+    private static LogManager logManager = LogManager.getLogManager();
+    private static Logger logger = Logger.getLogger(Server.class.getName());
+    private static Handler fileHandler;
+
+    static {
+        try {
+            logManager.readConfiguration(new FileInputStream("logging.properties"));
+            fileHandler = new FileHandler("Logs/DatabaseLogs/log_Database_%g.log", 10 * 1024, 10, true);
+            fileHandler.setFormatter(new Formatter() {
+                @Override
+                public String format(LogRecord r) {
+                    return String.format(">>>>> %s LVL: %s \n", r.getMessage(), r.getThreadID());
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public UsersData() {
         try {
             connect();
             prepareStatement();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -30,7 +52,7 @@ public class UsersData implements AuthService {
             statement.close();
             connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -51,7 +73,7 @@ public class UsersData implements AuthService {
                 return resultSet.getString(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
         return null;
     }
@@ -65,7 +87,7 @@ public class UsersData implements AuthService {
             preparedInsertStatement.executeUpdate();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
             return false;
         }
     }
@@ -85,10 +107,11 @@ public class UsersData implements AuthService {
                 preparedUpdateStatement.setString(1, nickName);
                 preparedUpdateStatement.setString(2, login);
                 preparedUpdateStatement.executeUpdate();
+                logger.log(Level.FINE, "User " + login + " changed nickname to " + nickName);
                 return true;
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, e.getMessage());
         }
         return false;
     }
