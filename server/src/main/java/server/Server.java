@@ -1,50 +1,76 @@
 package server;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.*;
 
 public class Server {
     private ServerSocket server;
     private Socket socket;
     private final int PORT = 30000;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
+    private static LogManager logManager = LogManager.getLogManager();
+    private static Logger logger = Logger.getLogger(Server.class.getName());
+    private static Handler fileHandler;
+
+    static {
+        try {
+            logManager.readConfiguration(new FileInputStream("logging.properties"));
+            fileHandler = new FileHandler("Logs/ServerLogs/log_Server_%g.log", 10 * 1024, 10, true);
+            fileHandler.setFormatter(new Formatter() {
+            @Override
+            public String format(LogRecord r) {
+                return String.format(">>>>> %s LVL: %s \n",r.getMessage(), r.getThreadID());
+            }
+        });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private List<ClientHandler> clients;
     private AuthService authService;
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
 
     public Server() {
         clients = new CopyOnWriteArrayList<>();
         authService = new UsersData();
 
+        logger.addHandler(fileHandler);
+
         try {
             server = new ServerSocket(PORT);
             UsersData.connect();
-            System.out.println("Server started");
-            System.out.println("DataBase connected");
-
+            logger.log(Level.FINE, "Server started!");
+            logger.log(Level.FINE, "Database connected!");
 
             while (true) {
                 socket = server.accept();
-                System.out.println("Client connected");
+                logger.log(Level.CONFIG, "Client connected");
                 new ClientHandler(this, socket);
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, e.getMessage());
             }
             try {
                 server.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, e.getMessage());
             }
         }
     }
